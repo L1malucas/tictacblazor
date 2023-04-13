@@ -1,4 +1,27 @@
-<h3>Next player: "@(xIsNext ? 'X' : 'O')"</h3>
+@using Helpers
+
+@{
+    var gameStatus = Helper.CalculateGameStatus(values);
+    string status;
+    if (gameStatus == GameStatus.X_wins)
+    {
+        status = "Winner: X";
+    }
+    else if (gameStatus == GameStatus.O_wins)
+    {
+        status = "Winner: O";
+    }
+    else if (gameStatus == GameStatus.Draw)
+    {
+        status = "Draw !";
+    }
+    else
+    {
+        char nextPlayer = xIsNext ? 'X' : 'O';
+        status = $"Next player: {nextPlayer}";
+    }
+    <h3>@status</h3>
+}
 <div class="board">
     @for (int i = 0; i < 9; i++)
     {
@@ -8,28 +31,46 @@
                 ClickHandler="@(() => HandleClick(squareNumber))"/>
     }
 </div>
-
+<button class="btn btn-primary" @onclick="PlayAgainHandler">
+  New game
+</button>
 @code {
     private bool xIsNext;
     private char[] values = new char[9];
-       protected override async Task OnInitializedAsync()     
+    protected override void OnInitialized()
+    {
+        InitState();
+    }
+    private void HandleClick(int i)
+    {
+        if (values[i] != ' ')
         {
-               values = new char[9]
-                    {
-                    ' ', ' ', ' ',
-                    ' ', ' ', ' ',
-                    ' ', ' ', ' '
-                    };
+            return;
         }
-        private void HandleClick(int i)
+        bool isGameFiniched = Helper.CalculateGameStatus(values) != GameStatus.NotYetFiniched;
+        if (isGameFiniched)
         {
-            bool xToPlay = xIsNext;
-            values[i] = xToPlay ? 'X' : 'O';
-            xIsNext = !xToPlay;
+            return;
         }
-
+        bool xToPlay = xIsNext;
+        values[i] = xToPlay ? 'X' : 'O';
+        xIsNext = !xToPlay;
+    }
+    private void PlayAgainHandler()
+    {
+        InitState();
+    }
+    private void InitState()
+    {
+        values = new char[9]
+        {
+        ' ', ' ', ' ',
+        ' ', ' ', ' ',
+        ' ', ' ', ' '
+        };
+        xIsNext = true;
+    }
 }
-
 
 <style scoped>
     .board {
